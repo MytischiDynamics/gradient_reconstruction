@@ -7,11 +7,10 @@ from scipy.linalg import solve
 import matplotlib.pyplot as plt
 import os
 
-
 if __name__ == "__main__" :
     os.chdir(os.path.dirname(__file__))
     
-    img_f = io.imread("cpma.jpg", as_gray=True)
+    img_f = io.imread("data/cpma.jpg", as_gray=True)
     img_f = rescale(img_f, 0.5)
     (img_y, img_x) = img_f.shape
     
@@ -26,8 +25,14 @@ if __name__ == "__main__" :
     grad_x = filters.sobel_h(img)
     grad_y = filters.sobel_v(img)
     
+    grad_hh = filters.sobel_h(grad_x)
+    grad_vv = filters.sobel_v(grad_y)
+    
+    #lapl = np.zeros((img_y, img_x))
+    
+    lapl = grad_hh + grad_vv
     #building divergence from gradient
-    lapl = filters.laplace(img)
+    #lapl = filters.laplace(img)
     
     #A = np.zeros(((img_x + 2) * (img_y + 2), (img_x + 2) * (img_y + 2)))
     #b = np.zeros((img_x + 2) * (img_y + 2))
@@ -55,7 +60,7 @@ if __name__ == "__main__" :
             if x + 1 <= img_x -1 :
                 #print("(right)Set (" + str(x+1) + "; " + str(y) + ") to 1.0")
                 A[last_row, y * (img_x) + x + 1] = 1.0
-            b[last_row] = -lapl[x + 1, y + 1]
+            b[last_row] = lapl[y + 1, x + 1]
             
             last_row += 1
             
@@ -99,5 +104,11 @@ if __name__ == "__main__" :
     result = solve(A, b)
     result = result.reshape((img_y, img_x))
     
+    plt.figure(1)
+    plt.subplot(211)
+    plt.imshow(img_f)
+    plt.subplot(212)
     plt.imshow(result)
     plt.show()
+    #plt.imshow(result)
+    #plt.show()
